@@ -63,7 +63,7 @@ export function PlayVideo() {
     'https://otieu.com/4/10055984',
     'https://selfreliantfinding.com/HE9TFh',
     'https://aviatorreproducesauciness.com/2082665',
-    'https://viiukuhe.com/dc/?blockID=407711&subID=KadamAds',
+    'https://viiukuhe.com/dc/?blockID=407711&subID=KadamAds'
   ];
 
   useEffect(() => {
