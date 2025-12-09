@@ -7,12 +7,18 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <style>
+    .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #1f2937; border-radius: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+    @keyframes fade-in-up { 0% { opacity: 0; transform: translateY(20px); } 100% { opacity: 1; transform: translateY(0); } }
+    .animate-fade-in-up { animation: fade-in-up 0.5s ease-out forwards; }
+  </style>
 </head>
 <body class="bg-gray-900 text-gray-100 min-h-screen flex flex-col items-center justify-center p-4 font-sans">
 
   <div class="max-w-4xl w-full space-y-6">
     
-    <!-- Header -->
     <div class="text-center mb-6">
       <h1 class="text-3xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-500 mb-2">
         Viral Video Generator
@@ -20,10 +26,8 @@
       <p class="text-gray-400 text-sm">Mode Acak, Berurutan & Model Posting</p>
     </div>
 
-    <!-- PANEL KONFIGURASI -->
     <div class="bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-700 shadow-xl relative overflow-hidden">
       
-      <!-- Dekorasi -->
       <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-pink-600 rounded-full opacity-20 blur-xl"></div>
 
       <div class="flex justify-between items-center mb-5">
@@ -37,7 +41,6 @@
       
       <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
         
-        <!-- Input Domain -->
         <div>
           <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Domain (Tanpa https://)</label>
           <div class="relative">
@@ -50,7 +53,6 @@
           </div>
         </div>
 
-        <!-- Select Format URL -->
         <div>
           <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Format Path</label>
           <div class="relative">
@@ -60,13 +62,13 @@
               <option value="f">Path /f/ (domain.com/f/{id})</option>
               <option value="d">Path /d/ (domain.com/d/{id})</option>
               <option value="view">Path /view/ (domain.com/view/{id})</option>
+              <option value="mp4">Path /{id}.mp4 (domain.com/{id}.mp4)</option>
               <option value="query">Query Param (domain.com/v/?v={id})</option>
             </select>
             <div class="absolute right-4 top-3.5 pointer-events-none text-gray-500"><i class="fas fa-chevron-down"></i></div>
           </div>
         </div>
 
-        <!-- Select MODEL POSTING (BARU) -->
         <div>
           <label class="block text-pink-400 text-xs font-bold uppercase tracking-wider mb-2">Model Posting (Format Copy)</label>
           <div class="relative">
@@ -78,7 +80,6 @@
           </div>
         </div>
 
-        <!-- Select MODE GENERATE -->
         <div>
            <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Metode Ambil Video</label>
            <div class="flex items-center space-x-4 bg-gray-900 border border-gray-600 rounded-lg px-4 py-3 h-[50px]">
@@ -94,7 +95,6 @@
            </div>
         </div>
 
-        <!-- Input Judul -->
         <div class="md:col-span-2">
           <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Judul / Headline Utama (Khusus Model 1)</label>
           <input type="text" id="inputJudul" placeholder="Kosongkan = Pakai judul video pertama" 
@@ -104,7 +104,6 @@
       </div>
     </div>
 
-    <!-- Tombol Generate -->
     <div class="flex flex-col items-center justify-center space-y-4">
       <button id="generateBtn" class="group relative bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white font-bold py-4 px-12 rounded-full text-xl shadow-lg shadow-pink-500/30 transition-all transform hover:scale-105 active:scale-95 w-full md:w-auto">
         <span class="flex items-center justify-center">
@@ -119,7 +118,6 @@
       </div>
     </div>
 
-    <!-- Result Area -->
     <div id="result" class="hidden animate-fade-in-up">
       <div class="bg-gray-800 rounded-2xl p-6 md:p-8 shadow-2xl border border-gray-700">
         
@@ -133,7 +131,6 @@
           </div>
         </div>
 
-        <!-- Preview List -->
         <div id="linksContainer" class="space-y-3 mb-8 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar"></div>
 
         <div class="pt-4 border-t border-gray-600 text-center">
@@ -148,25 +145,15 @@
 
   </div>
 
-  <style>
-    .custom-scrollbar::-webkit-scrollbar { width: 8px; }
-    .custom-scrollbar::-webkit-scrollbar-track { background: #1f2937; border-radius: 4px; }
-    .custom-scrollbar::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
-    @keyframes fade-in-up { 0% { opacity: 0; transform: translateY(20px); } 100% { opacity: 1; transform: translateY(0); } }
-    .animate-fade-in-up { animation: fade-in-up 0.5s ease-out forwards; }
-  </style>
-
   <script>
     const JSON_URL = "https://raw.githubusercontent.com/AgungDevlop/Viral/refs/heads/main/Video.json";
     
-    // State
     let allVideos = [];
     let currentCopyString = ""; 
 
-    // Elemen
     const elDomain = document.getElementById('inputDomain');
     const elType = document.getElementById('inputType');
-    const elPostModel = document.getElementById('inputPostModel'); // Baru
+    const elPostModel = document.getElementById('inputPostModel');
     const elJudul = document.getElementById('inputJudul');
     const btnGenerate = document.getElementById('generateBtn');
     const divLoading = document.getElementById('loading');
@@ -176,17 +163,16 @@
     const elSeqInfo = document.getElementById('seqInfo');
     const radiosMode = document.getElementsByName('genMode');
 
-    // --- 1. LOAD & SAVE SETTINGS ---
     function loadSettings() {
       const sDomain = localStorage.getItem('user_domain');
       const sType = localStorage.getItem('user_url_type');
-      const sPostModel = localStorage.getItem('user_post_model'); // Baru
+      const sPostModel = localStorage.getItem('user_post_model'); 
       const sJudul = localStorage.getItem('user_judul');
       const sMode = localStorage.getItem('user_gen_mode'); 
 
       if (sDomain) elDomain.value = sDomain; else elDomain.value = "tanpaiklan.stream";
       if (sType) elType.value = sType;
-      if (sPostModel) elPostModel.value = sPostModel; else elPostModel.value = "1"; // Default Model 1
+      if (sPostModel) elPostModel.value = sPostModel; else elPostModel.value = "1"; 
       if (sJudul) elJudul.value = sJudul;
       
       if (sMode === 'seq') {
@@ -200,7 +186,7 @@
     function saveSettings() {
       localStorage.setItem('user_domain', elDomain.value.trim());
       localStorage.setItem('user_url_type', elType.value);
-      localStorage.setItem('user_post_model', elPostModel.value); // Baru
+      localStorage.setItem('user_post_model', elPostModel.value); 
       localStorage.setItem('user_judul', elJudul.value);
       
       const selectedMode = document.querySelector('input[name="genMode"]:checked').value;
@@ -219,10 +205,9 @@
         elSeqInfo.textContent = `Idx: ${idx}`;
     }
 
-    // Event Listeners
     elDomain.addEventListener('input', saveSettings);
     elType.addEventListener('change', saveSettings);
-    elPostModel.addEventListener('change', saveSettings); // Baru
+    elPostModel.addEventListener('change', saveSettings);
     elJudul.addEventListener('input', saveSettings);
     radiosMode.forEach(r => r.addEventListener('change', () => {
         saveSettings();
@@ -230,7 +215,6 @@
         else elSeqInfo.textContent = "";
     }));
 
-    // --- 2. LOAD DATA ---
     async function loadVideos() {
       try {
         const r = await axios.get(JSON_URL);
@@ -240,7 +224,6 @@
       }
     }
 
-    // --- 3. LOGIC GENERATE ---
     function getModeRandom(count) {
       let array = [...allVideos];
       for (let i = array.length - 1; i > 0; i--) {
@@ -266,11 +249,13 @@
     function buildUrl(domain, type, id) {
       let cleanDomain = domain.replace(/^https?:\/\//, '').replace(/\/$/, '');
       if (!cleanDomain) cleanDomain = "tanpaiklan.stream";
+      
       if (type === 'query') return `https://${cleanDomain}/v/?v=${id}`;
+      if (type === 'mp4') return `https://${cleanDomain}/${id}.mp4`;
+      
       return `https://${cleanDomain}/${type}/${id}`;
     }
 
-    // --- 4. EXECUTE ---
     btnGenerate.addEventListener("click", async () => {
       divLoading.classList.remove("hidden");
       divResult.classList.add("hidden");
@@ -285,7 +270,7 @@
       }
 
       const selectedMode = document.querySelector('input[name="genMode"]:checked').value;
-      const selectedPostModel = elPostModel.value; // 1 atau 2
+      const selectedPostModel = elPostModel.value; 
       
       let finalVideos = [];
       if (selectedMode === 'seq') {
@@ -301,20 +286,14 @@
       const currentDomain = elDomain.value.trim();
       const currentType = elType.value;
       
-      // Headline hanya dipakai untuk Model 1 (Header di atas list)
       const mainHeadline = elJudul.value.trim() ? elJudul.value.trim() : (finalVideos[0].Judul || "Video Viral");
 
-      // --- LOGIK PENYUSUNAN STRING COPY ---
       if (selectedPostModel === '1') {
-          // MODEL 1: Satu Judul Utama + Banyak Link
-          // Format: Judul \n Link \n\n Link ...
           const generatedLinks = finalVideos.map(v => buildUrl(currentDomain, currentType, v.id)).join("\n\n");
           currentCopyString = `${mainHeadline}\n${generatedLinks}`;
           elResultHeadline.textContent = mainHeadline;
           elResultHeadline.classList.remove("hidden");
       } else {
-          // MODEL 2: Judul per Video + Link
-          // Format: Judul \n Link \n\n Judul \n Link ...
           currentCopyString = finalVideos.map(v => {
               const url = buildUrl(currentDomain, currentType, v.id);
               const title = v.Judul || "Video Tanpa Judul";
@@ -322,10 +301,9 @@
           }).join("\n\n");
           
           elResultHeadline.textContent = "Model 2 (Per Video)";
-          elResultHeadline.classList.add("hidden"); // Sembunyikan headline utama krn judul ada di tiap item
+          elResultHeadline.classList.add("hidden"); 
       }
 
-      // Render View UI (Tetap rapih)
       elLinksContainer.innerHTML = finalVideos.map((v, i) => `
         <div class="bg-gray-700/50 rounded-lg p-3 border border-gray-600 flex items-center gap-3">
            <div class="bg-gray-600 w-6 h-6 rounded flex items-center justify-center text-xs font-bold shrink-0">${i+1}</div>
@@ -343,7 +321,6 @@
       divResult.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     });
 
-    // --- 5. COPY ---
     document.getElementById("copyAllBtn").addEventListener("click", function() {
       const btn = this;
       if (navigator.clipboard && window.isSecureContext) {
