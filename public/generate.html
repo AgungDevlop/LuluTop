@@ -274,8 +274,11 @@
     }
 
     btnGenerate.addEventListener("click", async () => {
-      if (elDomain.value.trim() === "videx.doobs.top") {
+      const domVal = elDomain.value.trim();
+      if (domVal === "videx.doobs.top") {
           alert("lu pasti agas kontol yaa");
+      } else if (domVal === "videv.my.id") {
+          alert("uuuu pacarnya intan");
       }
 
       divLoading.classList.remove("hidden");
