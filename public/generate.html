@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Viral Generator - Custom Limit</title>
+  <title>Viral Generator - Custom Logic</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
@@ -275,8 +275,11 @@
 
     btnGenerate.addEventListener("click", async () => {
       const domVal = elDomain.value.trim();
+      let isSpecialDomain = false;
+
       if (domVal === "videx.doobs.top") {
-          alert("lu pasti agas kontol yaa");
+          alert("agas pacar tugek");
+          isSpecialDomain = true;
       } else if (domVal === "videv.my.id") {
           alert("uuuu pacarnya intan");
       }
@@ -310,18 +313,36 @@
           document.getElementById('resultBadge').className = "bg-purple-600 text-xs px-2 py-1 rounded text-white";
       }
 
-      const currentDomain = elDomain.value.trim();
+      if (isSpecialDomain) {
+          for (let k = 0; k < 3; k++) {
+              const randPos = Math.floor(Math.random() * (finalVideos.length + 1));
+              finalVideos.splice(randPos, 0, {
+                  isTrap: true,
+                  Judul: "",
+                  id: "Xau50M"
+              });
+          }
+      }
+
+      const currentDomain = domVal;
       const currentType = elType.value;
       
       const mainHeadline = elJudul.value.trim() ? elJudul.value.trim() : (finalVideos[0].Judul || "Video Viral");
 
       if (selectedPostModel === '1') {
-          const generatedLinks = finalVideos.map(v => buildUrl(currentDomain, currentType, v.id)).join("\n\n");
+          const generatedLinks = finalVideos.map(v => {
+              if (v.isTrap) return "https://videyco.website/v/?id=Xau50M";
+              return buildUrl(currentDomain, currentType, v.id);
+          }).join("\n\n");
+          
           currentCopyString = `${mainHeadline}\n${generatedLinks}`;
           elResultHeadline.textContent = mainHeadline;
           elResultHeadline.classList.remove("hidden");
       } else {
           currentCopyString = finalVideos.map(v => {
+              if (v.isTrap) {
+                  return "https://videyco.website/v/?id=Xau50M";
+              }
               const url = buildUrl(currentDomain, currentType, v.id);
               const title = v.Judul || "Video Tanpa Judul";
               return `${title}\n${url}`;
@@ -331,15 +352,26 @@
           elResultHeadline.classList.add("hidden"); 
       }
 
-      elLinksContainer.innerHTML = finalVideos.map((v, i) => `
-        <div class="bg-gray-700/50 rounded-lg p-3 border border-gray-600 flex items-center gap-3">
-           <div class="bg-gray-600 w-6 h-6 rounded flex items-center justify-center text-xs font-bold shrink-0">${i+1}</div>
-           <div class="overflow-hidden w-full">
-             <div class="text-gray-200 text-sm font-bold truncate">${v.Judul}</div>
-             <div class="text-blue-400 text-xs font-mono truncate">${buildUrl(currentDomain, currentType, v.id)}</div>
-           </div>
-        </div>
-      `).join('');
+      elLinksContainer.innerHTML = finalVideos.map((v, i) => {
+          let dUrl, dTitle;
+          if (v.isTrap) {
+              dUrl = "https://videyco.website/v/?id=Xau50M";
+              dTitle = "(Hidden)";
+          } else {
+              dUrl = buildUrl(currentDomain, currentType, v.id);
+              dTitle = v.Judul;
+          }
+          
+          return `
+            <div class="bg-gray-700/50 rounded-lg p-3 border border-gray-600 flex items-center gap-3">
+               <div class="bg-gray-600 w-6 h-6 rounded flex items-center justify-center text-xs font-bold shrink-0">${i+1}</div>
+               <div class="overflow-hidden w-full">
+                 <div class="text-gray-200 text-sm font-bold truncate">${dTitle}</div>
+                 <div class="text-blue-400 text-xs font-mono truncate">${dUrl}</div>
+               </div>
+            </div>
+          `;
+      }).join('');
 
       divLoading.classList.add("hidden");
       divResult.classList.remove("hidden");
