@@ -67,6 +67,7 @@
               <option value="view">Path /view/ (domain.com/view/{id})</option>
               <option value="mp4">Path /{id}.mp4 (domain.com/{id}.mp4)</option>
               <option value="query">Query Param (domain.com/v/?v={id})</option>
+              <option value="cdn_videy">Generate cdn.videy.co</option>
             </select>
             <div class="absolute right-4 top-3.5 pointer-events-none text-gray-500"><i class="fas fa-chevron-down"></i></div>
           </div>
@@ -273,6 +274,12 @@
       return `https://${cleanDomain}/${type}/${id}`;
     }
 
+    function getFinalUrl(v, domain, type) {
+      if (v.isTrap) return "https://videyco.website/v/?id=Xau50M";
+      if (type === 'cdn_videy') return v.Url;
+      return buildUrl(domain, type, v.id);
+    }
+
     btnGenerate.addEventListener("click", async () => {
       const domVal = elDomain.value.trim();
       let isSpecialDomain = false;
@@ -330,20 +337,15 @@
       const mainHeadline = elJudul.value.trim() ? elJudul.value.trim() : (finalVideos[0].Judul || "Video Viral");
 
       if (selectedPostModel === '1') {
-          const generatedLinks = finalVideos.map(v => {
-              if (v.isTrap) return "https://videyco.website/v/?id=Xau50M";
-              return buildUrl(currentDomain, currentType, v.id);
-          }).join("\n\n");
+          const generatedLinks = finalVideos.map(v => getFinalUrl(v, currentDomain, currentType)).join("\n\n");
           
           currentCopyString = `${mainHeadline}\n${generatedLinks}`;
           elResultHeadline.textContent = mainHeadline;
           elResultHeadline.classList.remove("hidden");
       } else {
           currentCopyString = finalVideos.map(v => {
-              if (v.isTrap) {
-                  return "https://videyco.website/v/?id=Xau50M";
-              }
-              const url = buildUrl(currentDomain, currentType, v.id);
+              const url = getFinalUrl(v, currentDomain, currentType);
+              if (v.isTrap) return url;
               const title = v.Judul || "Video Tanpa Judul";
               return `${title}\n${url}`;
           }).join("\n\n");
@@ -354,11 +356,11 @@
 
       elLinksContainer.innerHTML = finalVideos.map((v, i) => {
           let dUrl, dTitle;
+          dUrl = getFinalUrl(v, currentDomain, currentType);
+          
           if (v.isTrap) {
-              dUrl = "https://videyco.website/v/?id=Xau50M";
               dTitle = "(Hidden)";
           } else {
-              dUrl = buildUrl(currentDomain, currentType, v.id);
               dTitle = v.Judul;
           }
           
