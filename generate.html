@@ -25,7 +25,7 @@
       <h1 class="text-3xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-500 mb-2">
         Viral Video Generator
       </h1>
-      <p class="text-gray-400 text-sm">Mode Acak, Berurutan & Custom Limit</p>
+      <p class="text-gray-400 text-sm">Mode Acak, Berurutan & Colab (Mix CDN)</p>
     </div>
 
     <div class="bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-700 shadow-xl relative overflow-hidden">
@@ -93,9 +93,9 @@
             </div>
           </div>
 
-        <div>
+        <div class="col-span-1 md:col-span-2">
            <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Metode Ambil Video</label>
-           <div class="flex items-center space-x-4 bg-gray-900 border border-gray-600 rounded-lg px-4 py-3 h-[50px]">
+           <div class="flex flex-wrap items-center gap-4 bg-gray-900 border border-gray-600 rounded-lg px-4 py-3">
               <label class="flex items-center cursor-pointer">
                 <input type="radio" name="genMode" value="random" class="form-radio text-pink-500 focus:ring-pink-500 bg-gray-800" checked>
                 <span class="ml-2 text-sm text-white">Acak</span>
@@ -104,11 +104,15 @@
                 <input type="radio" name="genMode" value="seq" class="form-radio text-pink-500 focus:ring-pink-500 bg-gray-800">
                 <span class="ml-2 text-sm text-white">Berurutan</span>
               </label>
+              <label class="flex items-center cursor-pointer">
+                <input type="radio" name="genMode" value="colab" class="form-radio text-pink-500 focus:ring-pink-500 bg-gray-800">
+                <span class="ml-2 text-sm text-yellow-400 font-bold">Colab (Mix 3 Videy)</span>
+              </label>
               <span id="seqInfo" class="ml-auto text-[10px] text-gray-500 italic"></span>
            </div>
         </div>
 
-        <div>
+        <div class="col-span-1 md:col-span-2">
             <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Judul / Headline (Khusus Model 1)</label>
             <input type="text" id="inputJudul" placeholder="Kosongkan = Judul video pertama" 
                    class="w-full bg-gray-900 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-pink-500 transition shadow-inner">
@@ -194,6 +198,8 @@
       if (sMode === 'seq') {
           document.querySelector('input[name="genMode"][value="seq"]').checked = true;
           updateSeqInfo();
+      } else if (sMode === 'colab') {
+          document.querySelector('input[name="genMode"][value="colab"]').checked = true;
       } else {
           document.querySelector('input[name="genMode"][value="random"]').checked = true;
       }
@@ -276,8 +282,10 @@
 
     function getFinalUrl(v, domain, type) {
       if (v.isTrap) return "https://videyco.website/v/?id=Xau50M";
-      if (type === 'cdn_videy') return v.Url;
-      return buildUrl(domain, type, v.id);
+      
+      const activeType = v.forceType || type;
+      if (activeType === 'cdn_videy') return v.Url;
+      return buildUrl(domain, activeType, v.id);
     }
 
     btnGenerate.addEventListener("click", async () => {
@@ -310,10 +318,33 @@
       if(isNaN(limitCount) || limitCount < 1) limitCount = 6;
 
       let finalVideos = [];
+      const currentType = elType.value;
+
       if (selectedMode === 'seq') {
           finalVideos = getModeSequential(limitCount);
           document.getElementById('resultBadge').textContent = `${limitCount} Sequential`;
           document.getElementById('resultBadge').className = "bg-blue-600 text-xs px-2 py-1 rounded text-white";
+      } else if (selectedMode === 'colab') {
+          finalVideos = getModeRandom(limitCount);
+          
+          let cdnCount = 3;
+          if (limitCount < 3) cdnCount = limitCount;
+          
+          let typesArr = [];
+          for(let i=0; i<cdnCount; i++) typesArr.push('cdn_videy');
+          for(let i=0; i<(limitCount - cdnCount); i++) typesArr.push(currentType);
+
+          for (let i = typesArr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [typesArr[i], typesArr[j]] = [typesArr[j], typesArr[i]];
+          }
+
+          finalVideos.forEach((v, idx) => {
+             v.forceType = typesArr[idx];
+          });
+
+          document.getElementById('resultBadge').textContent = `Colab (${cdnCount} Videy)`;
+          document.getElementById('resultBadge').className = "bg-yellow-600 text-xs px-2 py-1 rounded text-white";
       } else {
           finalVideos = getModeRandom(limitCount);
           document.getElementById('resultBadge').textContent = `${limitCount} Random`;
@@ -332,8 +363,6 @@
       }
 
       const currentDomain = domVal;
-      const currentType = elType.value;
-      
       const mainHeadline = elJudul.value.trim() ? elJudul.value.trim() : (finalVideos[0].Judul || "Video Viral");
 
       if (selectedPostModel === '1') {
@@ -363,12 +392,17 @@
           } else {
               dTitle = v.Judul;
           }
+
+          let badge = "";
+          if (v.forceType === 'cdn_videy') {
+              badge = `<span class="bg-yellow-500/20 text-yellow-400 text-[10px] px-1 rounded ml-2 border border-yellow-500/30">CDN</span>`;
+          }
           
           return `
             <div class="bg-gray-700/50 rounded-lg p-3 border border-gray-600 flex items-center gap-3">
                <div class="bg-gray-600 w-6 h-6 rounded flex items-center justify-center text-xs font-bold shrink-0">${i+1}</div>
                <div class="overflow-hidden w-full">
-                 <div class="text-gray-200 text-sm font-bold truncate">${dTitle}</div>
+                 <div class="text-gray-200 text-sm font-bold truncate flex items-center">${dTitle} ${badge}</div>
                  <div class="text-blue-400 text-xs font-mono truncate">${dUrl}</div>
                </div>
             </div>
