@@ -9,12 +9,47 @@ declare global {
   }
 }
 
+const LazyThumbnail = ({ url }: { url: string }) => {
+  const ref = useRef<HTMLVideoElement>(null);
+  const [inView, setInView] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) {
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setInView(true);
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { rootMargin: '200px' }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <video
+      ref={ref}
+      className="w-full h-full object-cover"
+      preload={inView ? 'metadata' : 'none'}
+      muted
+      playsInline
+    >
+      {inView && <source src={`${url}#t=0.1`} type="video/mp4" />}
+    </video>
+  );
+};
+
 const RecentPostCard = ({ video, onClick }: { video: any, onClick: (videoId: string) => void }) => (
   <div onClick={() => onClick(video.id)} className="group w-64 flex-shrink-0 cursor-pointer">
     <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-black border border-gray-700 group-hover:border-blue-500 transition-all">
-      <video className="w-full h-full object-cover" preload="none" muted playsInline>
-        <source src={video.Url} type="video/mp4" />
-      </video>
+      <LazyThumbnail url={video.Url} />
       <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
         <FaPlay className="text-white text-4xl" />
       </div>
@@ -286,9 +321,7 @@ export function PlayVideo() {
               {currentVideos.map((video) => (
                 <div onClick={() => handleCardClick(video.id)} key={video.id} className="group transition-all cursor-pointer">
                   <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-black border border-gray-700 group-hover:border-blue-500">
-                    <video className="w-full h-full object-cover" preload="none" muted playsInline>
-                      <source src={video.Url} type="video/mp4" />
-                    </video>
+                    <LazyThumbnail url={video.Url} />
                     <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                       <FaPlay className="text-white text-4xl" />
                     </div>
