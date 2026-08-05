@@ -5,7 +5,7 @@ export function Download() {
   const videoTitle = sessionStorage.getItem('videoTitle');
 
   const randomUrls = [
-    'https://www.effectivecpmnetwork.com/b3c368xkxz?key=430d12c7fd58ecba841fd905ca2dd3fd',
+    'https://viiukuhe.com/dc/?blockID=427841',
     'https://dulyhagglermounting.com/2082665',
   ];
   
