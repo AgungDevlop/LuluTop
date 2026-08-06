@@ -93,7 +93,7 @@ export function PlayVideo() {
   const playerInstance = useRef<any>(null);
 
   const randomUrls = [
-    'https://viiukuhe.com/dc/?blockID=427841',
+    'https://wwp.giriucat.com/redirect-zone/5137a848',
     'https://dulyhagglermounting.com/2082665'
   ];
 
